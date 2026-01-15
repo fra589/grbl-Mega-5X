@@ -30,8 +30,8 @@
   #include "nuts_bolts.h"
 
   // Serial port interrupt vectors
-  #define SERIAL_RX USART0_RX_vect
-  #define SERIAL_UDRE USART0_UDRE_vect
+  #define SERIAL_RX USART1_RX_vect
+  #define SERIAL_UDRE USART1_UDRE_vect
 
   // Define ports and pins
   #define DDR(port) DDR##port
@@ -151,7 +151,7 @@
   #endif
   #define MIN_LIMIT_BIT_0 5 // X Limit Min - Pin D3
   #define MIN_LIMIT_BIT_1 1 // Y Limit Min - Pin D14
-  #define MIN_LIMIT_BIT_2 3 // Z Limit Min - Pin D18
+  #define MIN_LIMIT_BIT_2 0 // Z Limit Min - Pin D18 -- TOBI changed this D21 vmtl.
   #if N_AXIS > 3
     #define MIN_LIMIT_BIT_3 7 // Axis number 4 : RAMPS AUX2 pin D42
   #endif
@@ -181,7 +181,7 @@
   #endif
   #define MAX_LIMIT_BIT_0 4 // X Limit Max - Pin D2
   #define MAX_LIMIT_BIT_1 0 // Y Limit Max - Pin D15
-  #define MAX_LIMIT_BIT_2 2 // Z Limit Max - Pin D19
+  #define MAX_LIMIT_BIT_2 1 // Z Limit Max - Pin D19  -- TOBI CHANGED THIS D20 vmtl.
   #if N_AXIS > 3
     #define MAX_LIMIT_BIT_3 1 // Axis number 4 : RAMPS AUX2 pin D40
   #endif

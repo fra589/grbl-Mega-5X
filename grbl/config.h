@@ -81,6 +81,8 @@
   #error "N_AXIS must be <= 6. N_AXIS > 6 is not implemented."
 #endif
 
+#define HOMING_PULLOFF_A_AXIS 15.0
+
 // Renaming axis doesn't change their number. By default, the status report give axis values in
 // the order of their number. Some graphical interface are not able to affect axis values reported
 // by Grbl to the correct axis name.
@@ -239,29 +241,38 @@
 // will not be affected by pin sharing.
 // NOTE: Defaults are set for a traditional 3-axis CNC machine. Z-axis first to clear, followed by X & Y.
 #if N_AXIS == 4 // 4 axis : homing
-  #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace.
-  #define HOMING_CYCLE_1 ((1<<AXIS_1)|(1<<AXIS_2))     // OPTIONAL: uncomment to move X,Y at the same time.
+  #define HOMING_CYCLE_0 (1<<AXIS_4)  // Home A axis 
+  #define HOMING_CYCLE_1 (1<<AXIS_1)  // COREXY COMPATIBLE: First home X
+  #define HOMING_CYCLE_2 (1<<AXIS_2)  // COREXY COMPATIBLE: Then home Y  //! #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace. ! CHANGED by Tobi
+  //! #define HOMING_CYCLE_0 ((1<<AXIS_1)|(1<<AXIS_2))     // OPTIONAL: uncomment to move X,Y at the same time.
   //#define HOMING_CYCLE_1 (1<<AXIS_1) // Home X axis  // OPTIONAL: uncomment to move only X at a time.
   //#define HOMING_CYCLE_2 (1<<AXIS_2) // Home Y axis  // OPTIONAL: uncomment to move only Y at a time.
   //#define HOMING_CYCLE_3 (1<<AXIS_4) // Home 4th axis (A)
 #elif N_AXIS == 5 // 5 axis : homing
-  #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace.
-  #define HOMING_CYCLE_1 ((1<<AXIS_1)|(1<<AXIS_2))     // OPTIONAL: uncomment to move X,Y at the same time.
+  #define HOMING_CYCLE_0 (1<<AXIS_4)  // Home A axis 
+  #define HOMING_CYCLE_1 (1<<AXIS_1)  // COREXY COMPATIBLE: First home X
+  #define HOMING_CYCLE_2 (1<<AXIS_2)  // COREXY COMPATIBLE: Then home Y
+  //! #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace. ! CHANGED by Tobi
+  //#define HOMING_CYCLE_0 ((1<<AXIS_1)|(1<<AXIS_2))     // OPTIONAL: uncomment to move X,Y at the same time.
   //#define HOMING_CYCLE_1 (1<<AXIS_1) // Home X axis  // OPTIONAL: uncomment to move only X at a time.
   //#define HOMING_CYCLE_2 (1<<AXIS_2) // Home Y axis  // OPTIONAL: uncomment to move only Y at a time.
   //#define HOMING_CYCLE_3 (1<<AXIS_4) // Home 4th axis (A)
   //#define HOMING_CYCLE_4 (1<<AXIS_5) // Home 5th axis (B)
 #elif N_AXIS == 6 // 6 axis : homing
-  #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace.
-  #define HOMING_CYCLE_1 ((1<<AXIS_1)|(1<<AXIS_2))     // OPTIONAL: uncomment to move X,Y at the same time.
+  #define HOMING_CYCLE_0 (1<<AXIS_4)  // Home A axis 
+  #define HOMING_CYCLE_1 (1<<AXIS_1)  // COREXY COMPATIBLE: First home X
+  #define HOMING_CYCLE_2 (1<<AXIS_2)  // COREXY COMPATIBLE: Then home Y  //! #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace. ! CHANGED by Tobi
+  //#define HOMING_CYCLE_0 ((1<<AXIS_1)|(1<<AXIS_2))     // OPTIONAL: uncomment to move X,Y at the same time.
   //#define HOMING_CYCLE_1 (1<<AXIS_1) // Home X axis  // OPTIONAL: uncomment to move only X at a time.
   //#define HOMING_CYCLE_2 (1<<AXIS_2) // Home Y axis  // OPTIONAL: uncomment to move only Y at a time.
   //#define HOMING_CYCLE_3 (1<<AXIS_4) // Home 4th axis (A)
   //#define HOMING_CYCLE_4 (1<<AXIS_5) // Home 5th axis (B)
   //#define HOMING_CYCLE_5 (1<<AXIS_6) // Home 6th axis (C)
 #else // Classic 3 axis
-  #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace.
-  #define HOMING_CYCLE_1 ((1<<AXIS_1)|(1<<AXIS_2))     // OPTIONAL: uncomment to move X,Y at the same time.
+  //#define HOMING_CYCLE_0 (1<<AXIS_4)  // Home A axis 
+  #define HOMING_CYCLE_1 (1<<AXIS_1)  // COREXY COMPATIBLE: First home X
+  #define HOMING_CYCLE_2 (1<<AXIS_2)  // COREXY COMPATIBLE: Then home Y  //! #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace. ! CHANGED by Tobi
+  //! #define HOMING_CYCLE_0 ((1<<AXIS_1)|(1<<AXIS_2))     // OPTIONAL: uncomment to move X,Y at the same time.
   //#define HOMING_CYCLE_1 (1<<AXIS_1) // Home X axis  // OPTIONAL: uncomment to move only X at a time.
   //#define HOMING_CYCLE_2 (1<<AXIS_2) // Home Y axis  // OPTIONAL: uncomment to move only Y at a time.
 #endif
@@ -269,8 +280,10 @@
 // NOTE: The following are two examples to setup homing for 2-axis machines.
 // #define HOMING_CYCLE_0 ((1<<AXIS_1)|(1<<AXIS_2))  // NOT COMPATIBLE WITH COREXY: Homes both X-Y in one cycle.
 
-// #define HOMING_CYCLE_0 (1<<AXIS_1)  // COREXY COMPATIBLE: First home X
-// #define HOMING_CYCLE_1 (1<<AXIS_2)  // COREXY COMPATIBLE: Then home Y
+//#define HOMING_CYCLE_0 (1<<AXIS_4)  // Home A axis 
+//#define HOMING_CYCLE_1 (1<<AXIS_1)  // COREXY COMPATIBLE: First home X
+//#define HOMING_CYCLE_2 (1<<AXIS_2)  // COREXY COMPATIBLE: Then home Y
+//#define HOMING_CYCLE_2 (1<<AXIS_4) 
 
 // Number of homing cycles performed after when the machine initially jogs to limit switches.
 // This help in preventing overshoot and should improve repeatability. This value should be one or
@@ -331,7 +344,7 @@
 // defined at (http://corexy.com/theory.html). Motors are assumed to positioned and wired exactly as
 // described, if not, motions may move in strange directions. Grbl requires the CoreXY A and B motors
 // have the same steps per mm internally.
-// #define COREXY // Default disabled. Uncomment to enable.
+#define COREXY // Default disabled. Uncomment to enable.
 
 // Inverts pin logic of the control command pins based on a mask. This essentially means you can use
 // normally-closed switches on the specified pins, rather than the default normally-open switches.

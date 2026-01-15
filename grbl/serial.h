@@ -33,6 +33,9 @@
 
 #define SERIAL_NO_DATA 0xff
 
+// UART1 Definitionen (Pin 19 = RX1, Pin 18 = TX1)
+#define SERIAL_RX_PIN 19
+#define SERIAL_TX_PIN 18
 
 void serial_init();
 

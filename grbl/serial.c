@@ -65,21 +65,23 @@ uint8_t serial_get_tx_buffer_count()
 
 void serial_init()
 {
-  // Set baud rate
+  // ===== Initialize UART1 (GPIO - Raspberry Pi) =====
+  // UART0 ist komplett deaktiviert!
+  
   #if BAUD_RATE < 57600
-    uint16_t UBRR0_value = ((F_CPU / (8L * BAUD_RATE)) - 1)/2 ;
-    UCSR0A &= ~(1 << U2X0); // baud doubler off  - Only needed on Uno XXX
+    uint16_t UBRR1_value = ((F_CPU / (8L * BAUD_RATE)) - 1)/2;
+    UCSR1A &= ~(1 << U2X1);
   #else
-    uint16_t UBRR0_value = ((F_CPU / (4L * BAUD_RATE)) - 1)/2;
-    UCSR0A |= (1 << U2X0);  // baud doubler on for high baud rates, i.e. 115200
+    uint16_t UBRR1_value = ((F_CPU / (4L * BAUD_RATE)) - 1)/2;
+    UCSR1A |= (1 << U2X1);
   #endif
-  UBRR0H = UBRR0_value >> 8;
-  UBRR0L = UBRR0_value;
-
-  // enable rx, tx, and interrupt on complete reception of a byte
-  UCSR0B |= (1<<RXEN0 | 1<<TXEN0 | 1<<RXCIE0);
-
-  // defaults to 8-bit, no parity, 1 stop bit
+  
+  UBRR1H = UBRR1_value >> 8;
+  UBRR1L = UBRR1_value;
+  
+  // Enable RX, TX und RX-Interrupt für UART1
+  UCSR1B |= (1<<RXEN1 | 1<<TXEN1 | 1<<RXCIE1);
+  // Defaults: 8-bit, no parity, 1 stop bit
 }
 
 
@@ -100,17 +102,18 @@ void serial_write(uint8_t data) {
   serial_tx_buffer_head = next_head;
 
   // Enable Data Register Empty Interrupt to make sure tx-streaming is running
-  UCSR0B |=  (1 << UDRIE0);
+  // Enable Data Register Empty Interrupt
+  UCSR1B |= (1 << UDRIE1);
 }
 
 
 // Data Register Empty Interrupt handler
-ISR(SERIAL_UDRE)
+ISR(USART1_UDRE_vect)
 {
   uint8_t tail = serial_tx_buffer_tail; // Temporary serial_tx_buffer_tail (to optimize for volatile)
 
   // Send a byte from the buffer
-  UDR0 = serial_tx_buffer[tail];
+  UDR1 = serial_tx_buffer[tail];
 
   // Update tail position
   tail++;
@@ -118,8 +121,8 @@ ISR(SERIAL_UDRE)
 
   serial_tx_buffer_tail = tail;
 
-  // Turn off Data Register Empty Interrupt to stop tx-streaming if this concludes the transfer
-  if (tail == serial_tx_buffer_head) { UCSR0B &= ~(1 << UDRIE0); }
+  // Turn off Data Register Empty Interrupt when done
+  if (tail == serial_tx_buffer_head) { UCSR1B &= ~(1 << UDRIE1); }
 }
 
 
@@ -141,26 +144,25 @@ uint8_t serial_read()
 }
 
 
-ISR(SERIAL_RX)
+ISR(USART1_RX_vect)
 {
-  uint8_t data = UDR0;
+  uint8_t data = UDR1;
   uint8_t next_head;
 
-  // Pick off realtime command characters directly from the serial stream. These characters are
-  // not passed into the main buffer, but these set system state flag bits for realtime execution.
+  // Pick off realtime command characters directly from the serial stream.
   switch (data) {
-    case CMD_RESET:         mc_reset(); break;     // Call motion control reset routine (soft reset).
-    case CMD_STATUS_REPORT: system_set_exec_state_flag(EXEC_STATUS_REPORT); break; // Set as true
-    case CMD_CYCLE_START:   system_set_exec_state_flag(EXEC_CYCLE_START); break; // Set as true
-    case CMD_FEED_HOLD:     system_set_exec_state_flag(EXEC_FEED_HOLD); break; // Set as true
+    case CMD_RESET:         mc_reset(); break;
+    case CMD_STATUS_REPORT: system_set_exec_state_flag(EXEC_STATUS_REPORT); break;
+    case CMD_CYCLE_START:   system_set_exec_state_flag(EXEC_CYCLE_START); break;
+    case CMD_FEED_HOLD:     system_set_exec_state_flag(EXEC_FEED_HOLD); break;
     default :
-      if (data > 0x7F) { // Real-time control characters are extended ACSII only.
+      if (data > 0x7F) { // Real-time control characters
         switch(data) {
-          case CMD_SAFETY_DOOR:   system_set_exec_state_flag(EXEC_SAFETY_DOOR); break; // Set as true
+          case CMD_SAFETY_DOOR:   system_set_exec_state_flag(EXEC_SAFETY_DOOR); break;
           case CMD_JOG_CANCEL:
-            if (sys.state & STATE_JOG) { // Block all other states from invoking motion cancel.
+            if (sys.state & STATE_JOG) {
               system_set_exec_state_flag(EXEC_MOTION_CANCEL);
-              serial_reset_read_buffer(); // Vide un reste éventuel de données dans le buffer
+              serial_reset_read_buffer();
             }
             break;
           #ifdef DEBUG
@@ -183,17 +185,14 @@ ISR(SERIAL_RX)
           case CMD_COOLANT_FLOOD_OVR_TOGGLE: system_set_exec_accessory_override_flag(EXEC_COOLANT_FLOOD_OVR_TOGGLE); break;
           case CMD_COOLANT_MIST_OVR_TOGGLE: system_set_exec_accessory_override_flag(EXEC_COOLANT_MIST_OVR_TOGGLE); break;
         }
-        // Throw away any unfound extended-ASCII character by not passing it to the serial buffer.
       } else { // Write character to buffer
         next_head = serial_rx_buffer_head + 1;
         if (next_head == RX_RING_BUFFER) { next_head = 0; }
 
-        // Write data to buffer unless it is full.
         if (next_head != serial_rx_buffer_tail) {
           serial_rx_buffer[serial_rx_buffer_head] = data;
           serial_rx_buffer_head = next_head;
         } else {
-          // Indicate serial buffer overflow critical event.
           system_set_exec_alarm(EXEC_ALARM_SERIAL_RX_OVERFLOW);
         }
       }

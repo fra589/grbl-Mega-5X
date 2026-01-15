@@ -280,7 +280,7 @@ void limits_go_home(uint8_t cycle_mask)
             int32_t axis_position = system_convert_corexy_to_x_axis_steps(sys_position);
             sys_position[A_MOTOR] = sys_position[B_MOTOR] = axis_position;
           } else {
-            sys_position[AXIS_3] = 0;
+            sys_position[idx] = 0; // fixed by Tobi
           }
         #else
           sys_position[idx] = 0;
@@ -295,8 +295,23 @@ void limits_go_home(uint8_t cycle_mask)
           else { target[idx] = -max_travel; }
         }
         // Apply axislock to the step port pins active in this cycle.
-        axislock[idx] = step_pin[idx];
-        sys.homing_axis_lock[idx] = axislock[idx];
+		#ifdef COREXY
+		  // Für CoreXY-Achsen (X und Y): Beide Motoren sperren
+		  if (idx == AXIS_1 || idx == AXIS_2) {
+			axislock[idx] = step_pin[A_MOTOR] | step_pin[B_MOTOR];
+			sys.homing_axis_lock[idx] = 65; // 65 ? 
+		  } 
+		  // Für alle anderen Achsen (Z, A, etc.): Nur eigenen Motor sperren
+		  else {
+			axislock[idx] = step_pin[idx];
+			sys.homing_axis_lock[idx] = axislock[idx];
+		  }
+		#else
+		  axislock[idx] = step_pin[idx];
+		  sys.homing_axis_lock[idx] = axislock[idx];
+		#endif
+        //axislock[idx] = step_pin[idx];
+        //sys.homing_axis_lock[idx] = 65; // For X+Y CoreXY without Z CHANGED BY TOBI
       }
 
     }
@@ -327,13 +342,29 @@ void limits_go_home(uint8_t cycle_mask)
                 #if N_AXIS > 5
                   else if (idx==AXIS_6) { axislock[idx] &= ~(step_pin[AXIS_6]); }
                 #endif
-                else { axislock[idx] &= ~(step_pin[A_MOTOR]|step_pin[B_MOTOR]); }
+				  else if (idx==AXIS_1 || idx==AXIS_2) { 
+					  axislock[idx] &= ~(step_pin[A_MOTOR]|step_pin[B_MOTOR]); 
+				  }
               #else
                 axislock[idx] &= ~(step_pin[idx]);
               #endif
             }
           }
-          sys.homing_axis_lock[idx] = axislock[idx];
+          // sys.homing_axis_lock[idx] = 65; // For X+Y CoreXY without Z CHANGED BY TOBI
+		  // sys.homing_axis_lock[idx] = axislock[idx];
+		  // Apply axislock to the step port pins active in this cycle.
+		  #ifdef COREXY
+		    // Für CoreXY-Achsen (X und Y): Beide Motoren sperren
+		    if (idx == AXIS_1 || idx == AXIS_2) {
+			  sys.homing_axis_lock[idx] = 65; // 65 ? 
+		    } 
+		    // Für alle anderen Achsen (Z, A, etc.): Nur eigenen Motor sperren
+		    else {
+			  sys.homing_axis_lock[idx] = axislock[idx];
+		    }
+		  #else
+		    sys.homing_axis_lock[idx] = axislock[idx];
+		  #endif
         }
       }
 
@@ -373,8 +404,25 @@ void limits_go_home(uint8_t cycle_mask)
       max_travel = settings.homing_pulloff*HOMING_AXIS_LOCATE_SCALAR;
       homing_rate = settings.homing_feed_rate;
     } else {
-      max_travel = settings.homing_pulloff;
-      homing_rate = settings.homing_seek_rate;
+	  // Achsenspezifische Pull-off-Distanz berechnen
+	  max_travel = 0.0;
+	  for (idx=0; idx<N_AXIS; idx++) {
+		if (bit_istrue(cycle_mask,bit(idx))) {
+		  float pull_off_distance;
+		  if (idx == AXIS_4 || idx == AXIS_5) {  // A-Achse und evtl. B-Achse
+			pull_off_distance = HOMING_PULLOFF_A_AXIS;  // Größere Distanz für Rotationsachsen
+		  } else {
+			pull_off_distance = settings.homing_pulloff;  // Standard für lineare Achsen
+		  }
+		  // Berechne maximale Distanz basierend auf steps_per_mm
+		  float axis_travel = pull_off_distance;
+		  if (idx >= N_AXIS_LINEAR) {  // Für Rotationsachsen
+			axis_travel = pull_off_distance;
+		  }
+		  max_travel = max(max_travel, axis_travel);
+		}
+	  }
+	  homing_rate = settings.homing_seek_rate;
     }
   } while (n_cycle-- > 0);
 
