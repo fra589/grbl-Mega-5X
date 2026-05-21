@@ -2,7 +2,7 @@
   serial.c - Low level functions for sending and recieving bytes via the serial port
   Part of Grbl
 
-  Copyright (c) 2017-2022 Gauthier Briere
+  Copyright (c) 2017-2026 Gauthier Briere
   Copyright (c) 2011-2016 Sungeun K. Jeon for Gnea Research LLC
   Copyright (c) 2009-2011 Simen Svale Skogsrud
 

@@ -2,7 +2,7 @@
   main.c - An embedded CNC Controller with rs274/ngc (g-code) support
   Part of Grbl
 
-  Copyright (c) 2017-2022 Gauthier Briere
+  Copyright (c) 2017-2026 Gauthier Briere
   Copyright (c) 2011-2016 Sungeun K. Jeon for Gnea Research LLC
   Copyright (c) 2009-2011 Simen Svale Skogsrud
 

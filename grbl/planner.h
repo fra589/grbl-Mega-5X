@@ -2,7 +2,7 @@
   planner.h - buffers movement commands and manages the acceleration profile plan
   Part of Grbl
 
-  Copyright (c) 2017-2022 Gauthier Briere
+  Copyright (c) 2017-2026 Gauthier Briere
   Copyright (c) 2011-2016 Sungeun K. Jeon for Gnea Research LLC
   Copyright (c) 2009-2011 Simen Svale Skogsrud
 

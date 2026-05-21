@@ -2,7 +2,7 @@
   report.h - reporting and messaging methods
   Part of Grbl
 
-  Copyright (c) 2017-2022 Gauthier Briere
+  Copyright (c) 2017-2026 Gauthier Briere
   Copyright (c) 2012-2016 Sungeun K. Jeon for Gnea Research LLC
 
   Grbl is free software: you can redistribute it and/or modify

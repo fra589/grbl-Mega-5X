@@ -2,7 +2,7 @@
   analog_control.c - Read analog input
   Part of Grbl
 
-  Copyright (c) 2017-2022 Gauthier Briere
+  Copyright (c) 2017-2026 Gauthier Briere
 
   Grbl is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
