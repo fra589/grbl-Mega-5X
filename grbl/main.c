@@ -45,6 +45,8 @@ uint8_t axis_D_mask = 0; // Global mask for axis U bits
 uint8_t axis_E_mask = 0; // Global mask for axis V bits
 uint8_t axis_H_mask = 0; // Global mask for axis W bits
 unsigned char axis_name[N_AXIS]; // Global table of axis names
+bool is_clone[N_AXIS];  // Global table if axes are cloned
+
 #ifdef DEBUG
   volatile uint8_t sys_rt_exec_debug;
 #endif
@@ -434,6 +436,14 @@ int main(void)
     }
   #endif
   
+  for (int i=0; i<N_AXIS; i++) {
+    for (int j=i+1; j<N_AXIS; j++) {
+      if (axis_name[i] == axis_name[j]) {
+        is_clone[j] = true;
+      }
+    }
+  }
+
   #ifdef SORT_REPORT_BY_AXIS_NAME
     #ifdef REPORT_VALUE_FOR_AXIS_NAME_ONCE
       // Calcule le nombre de nom d'axes différents à utiliser dans report.c

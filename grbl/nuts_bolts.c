@@ -164,6 +164,7 @@ float hypot_f(float x, float y) { return(sqrt(x*x + y*y)); }
 
 float convert_delta_vector_to_unit_vector(float *vector)
 {
+  /* Remplacement par nouvelle méthode pour isclone
   uint8_t idx, j;
   bool isclone;
   float magnitude = 0.0;
@@ -177,6 +178,16 @@ float convert_delta_vector_to_unit_vector(float *vector)
     }
     if (vector[idx] != 0.0) {
       if (isclone == false) { // Avoid count axis multiple time in case of axis cloning
+        magnitude += vector[idx]*vector[idx];
+      }
+    }
+  }
+  */
+  uint8_t idx;
+  float magnitude = 0.0;
+  for (idx=0; idx<N_AXIS; idx++) {
+    if (vector[idx] != 0.0) {
+      if (is_clone[idx] == false) { // Avoid count axis multiple time in case of axis cloning
         magnitude += vector[idx]*vector[idx];
       }
     }

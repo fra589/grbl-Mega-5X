@@ -165,6 +165,7 @@ extern uint8_t axis_D_mask; // Global mask for axis A bits
 extern uint8_t axis_E_mask; // Global mask for axis B bits
 extern uint8_t axis_H_mask; // Global mask for axis C bits
 extern unsigned char axis_name[N_AXIS]; // Global table of axis names
+extern bool is_clone[N_AXIS];  // Global table if axes are cloned
 #ifdef DEBUG
   #define EXEC_DEBUG_REPORT  bit(0)
   extern volatile uint8_t sys_rt_exec_debug;
